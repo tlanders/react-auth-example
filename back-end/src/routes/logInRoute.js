@@ -39,6 +39,7 @@ export const logInRoute = {
                         console.log(err);
                         res.sendStatus(500);
                     } else {
+                        console.log(`login success: returning id=${id}, token=${token}`);
                         res.status(200).send({token})
                     }
                 }
