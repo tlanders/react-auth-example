@@ -22,6 +22,7 @@ export const signUpRoute = {
 
         const passwordHash = await bcrypt.hash(password, 10);
         console.log('signup post - passwordHash=' + passwordHash);
+        console.log(passwordHash);
 
         const verificationString = uuidv4();
 
@@ -47,8 +48,8 @@ export const signUpRoute = {
                 from: 'lists@landersconsulting.biz',
                 subject: 'Please verify your account',
                 text: `
-                    Hi, to verify your account please click this link 
-                    http://localhost:3000/verify-email/${verificationString}.
+                    Hi, to verify your account please click this link.
+                    http://localhost:3000/verify-email/${verificationString}
                     `,
             })
         } catch(e) {
