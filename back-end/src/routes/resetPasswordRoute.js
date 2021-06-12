@@ -2,7 +2,7 @@ import {getDbConnection} from '../db';
 import bcrypt from 'bcrypt';
 
 export const resetPasswordRoute = {
-    path: '/api/reset-password/:passwordResetCode/reset-password',
+    path: '/api/users/:passwordResetCode/reset-password',
     method: 'put',
     handler: async (req, res) => {
         const {passwordResetCode} = req.params;
@@ -13,14 +13,20 @@ export const resetPasswordRoute = {
 
         const db = getDbConnection('react-auth-db');
 
-        await db.collection('users')
-            .updateOne(
-                {passwordResetCode},
-                {
-                    $set: {passwordHash},
-                    $unset: {passwordResetCode: ''},
-                }
-            );
+        try {
+            await db.collection('users')
+                .updateOne(
+                    {passwordResetCode},
+                    {
+                        $set: {passwordHash},
+                        $unset: {passwordResetCode: ''},
+                    }
+                );
+            console.log('reset password success');
+        } catch(err) {
+            console.log('reset password failed');
+            console.log(err);
+        }
 
         res.sendStatus(200);
     },
