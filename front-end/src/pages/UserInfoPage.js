@@ -85,9 +85,9 @@ export const UserInfoPage = () => {
     return (
         <div className="content-container">
             <h1>Info for {email}</h1>
-            {showGetVerifiedMessage && <div className="fail">Check your inbox and please verify your email address</div>}
+            {showGetVerifiedMessage && <div className="fail">Check your inbox and please verify your email address.</div>}
             {showSuccessMessage && <div className="success">Successfully saved user data!</div>}
-            {showErrorMessage && <div className="fail">Uh oh... something went wrong and we couldn't save changes</div>}
+            {showErrorMessage && <div className="fail">Uh oh... something went wrong and we couldn't save changes.<br/>Have you verified your email address?</div>}
             <label>
                 Favorite Food:
                 <input

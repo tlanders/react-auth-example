@@ -7,15 +7,15 @@ export const updateUserInfoRoute = {
     method: 'put',
     handler: async (req,res) => {
         const { authorization } = req.headers;
-        const { id } = req.params;
+        const { id: requestId } = req.params;
 
-        console.log(`update user ${id}, auth: ${authorization}`);
+        console.log(`update user ${requestId}, auth: ${authorization}`);
 
         if(!authorization) {
             console.log('update error - no authorization')
             res.sendStatus(401);
         }
-        if(!id) {
+        if(!requestId) {
             console.log('update error - no userId')
             res.sendStatus(403);
         }
@@ -32,35 +32,48 @@ export const updateUserInfoRoute = {
         const token = authorization.split(' ')[1];
         console.log(`update user: token=${token}`);
 
-        jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-            if(err) {
-                console.log(`update user info - error verifying token: ${err}`);
-                return res.sendStatus(401);
-            }
-
-            console.log('update user - no error after verify');
-            // don't let a user modify someone else's data
-            const {id, isVerified} = decoded;
-            if(id !== id) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log('update user, decoded...');
+            console.log(decoded);
+            const {id} = decoded;
+            console.log('update user, tokenId: ' + id);
+            if(requestId !== id) {
                 console.log("update failed - user can't update someone else");
                 return res.sendStatus(403);
             }
-            if(!isVerified) {
-                console.log('update failed - user not verified');
-                return res.sendStatus(403);
-            }
-        })
+        } catch(err) {
+            console.log('Exception verifying token');
+            console.log(err);
+            return res.sendStatus(401);
+        }
+
+        console.log('update user - no error after verify');
 
         const db = getDbConnection('react-auth-db');
+        const user = await db.collection('users').findOne({_id:ObjectId(requestId)});
+        if(!user) {
+            // XXX - user not found
+            console.log('login - user not found');
+            return res.sendStatus(401);
+        }
+
+        const {isVerified} = user;
+
+        if(!isVerified) {
+            console.log('update failed - user not verified');
+            return res.sendStatus(403);
+        }
+
         const result = await db.collection('users').findOneAndUpdate(
-            {_id:ObjectId(id)},
+            {_id:ObjectId(requestId)},
             {$set: {info: {favoriteFood, hairColor, bio}}},
             {returnOriginal: false},
             );
 
-        const {email, isVerified, info} = result.value;
+        const {email, info} = result.value;
 
-        jwt.sign({id, email, isVerified, info}, process.env.JWT_SECRET,
+        jwt.sign({id: requestId, email, isVerified : true, info}, process.env.JWT_SECRET,
             {expiresIn: '2d'},
             (err,token) => {
                 if(err) {
