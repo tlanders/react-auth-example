@@ -7,9 +7,11 @@ export const resetPasswordRoute = {
     handler: async (req, res) => {
         const {passwordResetCode} = req.params;
         const {newPassword} = req.body;
-        const passwordHash = bcrypt.hash(newPassword, 10);
+        const passwordHash = await bcrypt.hash(newPassword, 10);
 
         console.log('reset password post - resetCode=' + passwordResetCode);
+        console.log('new password hash');
+        console.log(passwordHash);
 
         const db = getDbConnection('react-auth-db');
 
